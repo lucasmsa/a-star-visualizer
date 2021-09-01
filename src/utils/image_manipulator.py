@@ -2,24 +2,23 @@ import cv2
 import numpy as np
 from PIL import Image
 from math import floor
-from itertools import zip_longest
 
 RESOLUTION = 50
 A_STAR_RESOLUTION = 4 
 
-class ImageManipulator:
-    ROBOT_MAPS = {
-        "initial_map": (np.ones(shape=(self.max_x, self.max_y)) * 2).astype(int).tolist(),
-        "rgb": np.ones(shape=(self.max_x, self.max_y)).astype(int).tolist(),
-        "flipped": np.ones(shape=(self.max_y, self.max_x)).astype(int).tolist()
-    }
-    
+class ImageManipulator:  
     def __init__(self, image_path: str):
         self.image = (cv2.cvtColor(cv2.imread(image_path), cv2.COLOR_BGR2GRAY) < 5).astype(int)
         self.height, self.width = self.image.shape[0], \
                                     self.image.shape[1]
         self.max_x = floor(self.width/RESOLUTION) * A_STAR_RESOLUTION
         self.max_y = floor(self.height/RESOLUTION) * A_STAR_RESOLUTION
+        
+        self.ROBOT_MAPS = {
+            "initial_map": (np.ones(shape=(self.max_x, self.max_y)) * 2).astype(int).tolist(),
+            "rgb": np.ones(shape=(self.max_x, self.max_y)).astype(int).tolist(),
+            "flipped": np.ones(shape=(self.max_y, self.max_x)).astype(int).tolist()
+        } 
         
     def create_robot_map(self):
         robot_map = self.ROBOT_MAPS["initial_map"]
@@ -77,5 +76,4 @@ class ImageManipulator:
 image_manipulator = ImageManipulator('./data/mapa_robotica_inflado.bmp')
 
 robot_map = image_manipulator.create_robot_map()
-print(robot_map)
 image_manipulator.plot_robot_map(robot_map)
