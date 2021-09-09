@@ -1,26 +1,38 @@
 import re
-from typing import Sized
 import cv2
-import numpy as np
 import math
+import numpy as np
 from PIL import Image
 from math import sqrt
 from math import floor
-from scipy.spatial import distance
-from utils.image_manipulator import ImageManipulator
+from typing import Sized
 from utils.node import Node
+from scipy.spatial import distance
+from utils.insert_open import insert_open
+import utils.set_start_and_end_points as ssp
+from utils.image_manipulator import ImageManipulator
 
 
 class A_Star:
     def __init__(self, image_manipulator: ImageManipulator):
         self.image_manipulator = image_manipulator
         self.robot_map = self.image_manipulator.execute()
-        self.open_list = self.fetch_spaces(space_number=2)
-        self.closed_list = self.fetch_spaces(space_number=-1)
-        self.closed_count = 0
+        self.change_start_and_end_points_values()
+        self.open_list: list[Node] = [
+            Node(self.current_point, 
+                self.current_point, 
+                0, 
+                self.distance(self.current_point, self.end_point))]
+        self.closed_list: list[Node] = [] 
+        self.closed_count = len(self.closed_list)
         self.start_node = 0
         self.goal_node = 0
 
+    def change_start_and_end_points_values(self):
+        self.start_point, self.end_point = self.image_manipulator.set_start_and_end_points(ssp)
+        self.robot_map[self.start_point[1]][self.start_point[0]] = 0
+        self.robot_map[self.end_point[1]][self.end_point[0]] = 1
+        
     def fetch_spaces(self, space_number):
         spaces = set()
         for x in range(len(self.robot_map)):
@@ -28,73 +40,45 @@ class A_Star:
                 if self.robot_map[x][y] == space_number:
                     coordinates = (x, y)
                     spaces.add(coordinates)
-
+        
         return spaces
 
-    def get_input(self):
-        self.starting_point = (0, 0)
-        self.arrival_point = (0, 0)
+    def distance(self, initial_points, end_points):
+        return distance.euclidean(initial_points, end_points)
+    
+    def fetch_smallest_total_distance(self):
+        smallest_total_distance = {
+            "index": 0,
+            "value": float("inf")
+        }
+        
+        for index, node in enumerate(self.open_list):
+            if node.total_distance < smallest_total_distance["value"]:
+                smallest_total_distance["index"] = index
+                smallest_total_distance["value"] = node.total_distance
+                
+        return smallest_total_distance["index"]
+            
+    def algorithm(self):
+        no_path_found = False
+        current_node = None
+        
+        while self.open_list:
+            smallest_distance_index = self.fetch_smallest_total_distance()
+            current_node = self.open_list[smallest_distance_index]
+            self.open_list.pop(smallest_distance_index)
+            self.closed_list.append(current_node)
+            
+            if current_node.x == self.end_point[0] and current_node.y == self.end_point[1]:
+                print("Congrats my friend you found the path")
+                break
+            
+            # TODO: Generate children (adjacent nodes)
+            
+        print(self.current_point, self.end_point)
 
-        print("Por favor digite o ponto de partida do roboto:")
-        points = re.findall(r'[0-9]+', input())
-        try:
-            x, y = points[0], points[1]
-            self.starting_point = (x, y)
-            self.robot_map[self.starting_point[0]
-                           ][self.starting_point[1]] = 1
-        except:
-            print("\nDigite dois valores para a posição")
-
-        while(self.robot_map[int(self.starting_point[0])][int(self.starting_point[1])] != 2):
-            print(
-                f"Valores inválidos, tente outro, algunas exemplos são: {list(self.open_list)[0:4]}")
-            points = re.findall(r'[0-9]+', input())
-            try:
-                x, y = points[0], points[1]
-                self.starting_point = (x, y)
-                self.robot_map[self.arrival_point[0]
-                               ][self.arrival_point[1]] = 1
-                self.start_node = Node(points[0], points[1], 0.0, -1)
-            except:
-                print("\nDigite dois valores para a posição")
-
-        print("_"*20)
-
-        print("Por favor digite o ponto de chegada do robotík:")
-        points = re.findall(r'[0-9]+', input())
-        try:
-            x, y = points[0], points[1]
-            self.arrival_point = (x, y)
-            self.robot_map[self.arrival_point[0]
-                           ][self.arrival_point[1]] = 0
-        except:
-            print("\nDigite dois valores para a posição")
-
-        while(self.robot_map[int(self.arrival_point[0])][int(self.arrival_point[1])] != 2):
-            print(
-                f"Valores inválidos, tente outro, algunas exemplos são: {self.list(open_list)[0:3]}")
-            points = re.findall(r'[0-9]+', input())
-            try:
-                x, y = points[0], points[1]
-                self.arrival_point = (x, y)
-                self.robot_map[self.arrival_point[0]
-                               ][self.arrival_point[1]] = 0
-
-            except:
-                print("\nDigite dois valores para a posição")
-
-    # joga duro!!!
-    def distance(x1, y1, x2, y2):
-        return distance.euclidian((x1, y1), (x2, y2))
-
-    def Algorithm():
-        self.closed_count = size(self.closed_list, 1)
-        open_count = 0
-
-
-image_manipulator = ImageManipulator(image_path="../data/mapa_robotica.bmp",
-                                     inflated_image_path="../data/mapa_inflado.bmp",
-                                     output_image_path="../output/cell_image.png")
-image_manipulator.execute()
+image_manipulator = ImageManipulator(image_path="./data/mapa_robotica.bmp",
+                                     inflated_image_path="./data/mapa_inflado.bmp",
+                                     output_image_path="./output/cell_image.png")
 a_star = A_Star(image_manipulator)
-a_star.get_input()
+a_star.algorithm()

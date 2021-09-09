@@ -2,7 +2,7 @@ import cv2
 import numpy as np
 from PIL import Image
 from math import floor
-import set_start_and_end_points as ssp
+# import set_start_and_end_points as ssp
 
 class ImageManipulator:
 
@@ -91,19 +91,11 @@ class ImageManipulator:
         robot_map_flipped = self.array_to_binary(np.array(image_plot))
         return robot_map_flipped
     
-    def set_start_and_end_points(self):
+    
+    def set_start_and_end_points(self, ssp):
         coordinates = ssp.handle_mouse_events(self.output_image_path)
-        print(coordinates)
-        return {
-            "start_point": coordinates[0],
-            "end_point": coordinates[1]
-        }
+
+        return coordinates
 
     def check_wall(self, x: int, y: int):
         return True if self.image[y, x] == 1 else False
-
-image_manipulator = ImageManipulator(image_path="./data/mapa_robotica.bmp",
-                                     inflated_image_path="./data/mapa_robotica_inflado.bmp",
-                                     output_image_path="./output/cell_image.png")
-image_manipulator.execute()
-image_manipulator.set_start_and_end_points()
