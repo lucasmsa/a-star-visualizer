@@ -1,6 +1,8 @@
+import cv2
 from utils.node import Node
+import matplotlib.pyplot as plt
 from scipy.spatial import distance
-from utils.paint_path import paint_path
+import matplotlib.animation as animation
 import utils.set_start_and_end_points as ssp
 from utils.image_manipulator import ImageManipulator
 
@@ -8,11 +10,15 @@ from utils.image_manipulator import ImageManipulator
 class A_Star:
     ADJACENT_SQUARES = [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]
     
-    def __init__(self, image_manipulator: ImageManipulator, output_cell_path: str):
+    def __init__(self, image_manipulator: ImageManipulator, output_cell_path: str, output_cell_with_initial_points: str, animation_output: str):
+        self.fig, self.ax = plt.subplots()
         self.image_manipulator = image_manipulator
         self.output_cell_path = output_cell_path
         self.robot_map = self.image_manipulator.execute()
+        self.animation_output = animation_output
         self.change_start_and_end_points_values()
+        self.output_cell_with_initial_points = output_cell_with_initial_points
+        self.animation_grid = cv2.imread(self.output_cell_with_initial_points)
         self.open_list = {
             f"{self.start_point}": Node(coordinates=self.start_point, 
                 parent=None, 
@@ -40,7 +46,6 @@ class A_Star:
         
         return False
         
-    
     def fetch_smallest_total_distance(self):
         smallest = {
             "coordinates": (0, 0), 
@@ -57,7 +62,8 @@ class A_Star:
             
     def execute(self):
         current_node = None
-        
+        frame = self.ax.imshow(self.animation_grid, animated=True)
+        animation_frames = []
         while self.open_list:
             current = self.fetch_smallest_total_distance()
             
@@ -67,15 +73,16 @@ class A_Star:
             current_node = current["node"]
             
             if current_node.coordinates == self.end_point:
-                print("INSIDE GOAL")
                 path_node = current_node
-                while path_node is not None:
-                    self.path_to_goal.append(path_node.coordinates)
-                    path_node = path_node.parent
                 
-                paint_path(self.path_to_goal, self.cell_image_path, self.output_cell_path)
-                print({"Path to goal": self.path_to_goal, "Current node": (current_node.x, current_node.y), "Goal node": self.end_point })
-                return self.path_to_goal[::]
+                while path_node is not None:
+                    self.path_to_goal.append(path_node)
+                    path_node = path_node.parent
+
+                self.image_manipulator.paint_main_path(self.path_to_goal, self.animation_grid, self.ax, animation_frames)
+                self.image_manipulator.save_animation(self.fig, animation, animation_frames, plt, self.animation_output)
+                
+                return self.path_to_goal
             
             offspring: list[Node] = []
             for adjacent_square in self.ADJACENT_SQUARES:
@@ -98,7 +105,9 @@ class A_Star:
                     open_list_node_total_distance = self.open_list[f"{child_node.coordinates}"].total_distance
                     if child_node.total_distance > open_list_node_total_distance:
                         continue   
-                
+                if child_node.coordinates != self.end_point:
+                    self.image_manipulator.paint_search(self.animation_grid, child_node, self.ax, animation_frames,"SEARCH")
+                    
                 self.open_list[f"{child_node.coordinates}"] = child_node 
            
 
@@ -106,5 +115,8 @@ image_manipulator = ImageManipulator(image_path="./data/mapa_robotica.bmp",
                                      inflated_image_path="./data/mapa_inflado.bmp",
                                      output_image_path="./output/cell_image.png")
 
-a_star = A_Star(image_manipulator, output_cell_path="./output/cell_image_path.png")
+a_star = A_Star(image_manipulator, 
+                output_cell_path="./output/cell_image_path.png", 
+                output_cell_with_initial_points="./output/cell_image_with_initial_points.png",
+                animation_output="./output/a_star_animation.gif")
 a_star.execute()

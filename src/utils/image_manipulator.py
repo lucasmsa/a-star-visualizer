@@ -77,6 +77,26 @@ class ImageManipulator:
                     robot_map_flipped[x][y] = 2
 
         return robot_map_flipped
+    
+    def save_animation(self, fig, animation, animation_frames, plt, animation_output):
+        ani = animation.ArtistAnimation(fig, artists=animation_frames, interval=25, blit=True, repeat=False)
+        plt.show()  
+        ani.save(animation_output, writer='pillow')
+    
+    def paint_main_path(self, path_to_goal, animation_grid, ax, animation_frames):
+        for i in range(len(path_to_goal) - 2, 0, -1):
+            node = path_to_goal[i]
+            self.paint_search(animation_grid, node, ax, animation_frames, "PATH_TO_GOAL")
+    
+    def paint_search(self, animation_grid, child_node, ax, animation_frames, path):
+        if path == "SEARCH":
+            color = (230, 0, 126)
+        elif path == "PATH_TO_GOAL":
+            color = (80, 200, 120)
+            
+        cv2.circle(animation_grid, child_node.coordinates, 0, color, -1)
+        frame = ax.imshow(animation_grid, animated=True)
+        animation_frames.append([frame])
 
     def plot_robot_map(self, robot_map: list):
         robot_map_image = self.array_to_RGB(robot_map)

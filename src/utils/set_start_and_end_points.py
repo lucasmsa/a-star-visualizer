@@ -5,11 +5,11 @@ def mouse_click(event, x, y, flags, param):
     is_black_space = grid[y][x].any() == 0
     if event == cv2.EVENT_LBUTTONDOWN and not is_black_space:
         if globals()["start_point"] is None:
-            cv2.circle(grid, (x, y), 1, (42, 25, 84), -1)
+            cv2.circle(grid, (x, y), 0, (42, 25, 84), -1)
             globals()["start_point"] = (x, y)
             
         elif globals()["end_point"] is None:
-            cv2.circle(grid, (x, y), 1, (69, 23, 81), -1)
+            cv2.circle(grid, (x, y), 0, (69, 23, 81), -1)
             globals()["end_point"] = (x, y)
             
         refresh_image()
