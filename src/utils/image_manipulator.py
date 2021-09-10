@@ -2,7 +2,6 @@ import cv2
 import numpy as np
 from PIL import Image
 from math import floor
-# import set_start_and_end_points as ssp
 
 class ImageManipulator:
 

@@ -30,7 +30,9 @@ def handle_mouse_events(output_image_path: str):
         k = cv2.waitKey(20) & 0xFF
         if k == 27 or start_point and end_point:
             refresh_image()
-            cv2.imwrite(f"{output_image_path[:-4]}_with_initial_points.png", grid)
-            time.sleep(1.5)
+            output_image_path = f"{output_image_path[:-4]}_with_initial_points.png"
+            cv2.imwrite(output_image_path, grid)
+            refresh_image()
+            time.sleep(3)
             cv2.destroyAllWindows()
-            return start_point, end_point
+            return start_point, end_point, output_image_path
