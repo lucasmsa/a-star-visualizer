@@ -1,3 +1,13 @@
-### A* Algorithm in Python
+## A* Algorithm in Python 🪜
 ---
-> Using the A* algorithm to traverse an occupancy grid. By executing the algorithm, the user is prompted to set the start and end points. Then, the robot will find the shortest path to the goal, displaying the path on the map and saving it to a file ⚙︎
+> Using the A* algorithm to traverse an occupancy grid. By executing the algorithm, the user is prompted to set the start and end points inside the grid. Then, the robot will find the shortest path to the goal, displaying the path on the map and saving it to a file afterwards ⚙︎
+
+
+### Installating dependencies 🔧
+- Inside the root directory of the project, run the following command: `pip install -r requirements.txt`
+
+### Running the program 🚀
+- On the root directory, execute: `python src/a_star.py`
+
+### Result 🧩
+[![](output/a_star_animation.gif)]()
