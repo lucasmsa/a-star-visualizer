@@ -1,6 +1,5 @@
-pandas
 opencv-python
-matplotlib
-scipy
-Pillow
 numpy
+matplotlib
+Pillow
+pytest
